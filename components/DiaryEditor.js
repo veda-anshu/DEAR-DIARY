@@ -1,9 +1,41 @@
-import React, { useState } from 'react';
-import { PenTool, Clock, Trash2, Image as ImageIcon, X, Download } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { PenTool, Clock, Trash2, Image as ImageIcon, X, Download, CheckCircle2 } from 'lucide-react';
 import { formatDateToDDMMYYYY, formatTimeToHHMM } from '../utils/dateUtils';
 
 export default function DiaryEditor({ currentEntry, setCurrentEntry, dateInput, setDateInput, currentDateTime, onSave, onNewEntry, onPastEntry, onImageUpload, onRemoveImage }) {
   const [expandedImage, setExpandedImage] = useState(null);
+  const [saveStatus, setSaveStatus] = useState('');
+  const textareaRef = useRef(null);
+
+  // 1. Feature: Auto-resize text area dynamically
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px';
+    }
+  }, [currentEntry.text]);
+
+  // 2. Feature: Auto-save draft every 1.5 seconds
+  useEffect(() => {
+    if (!currentEntry.id && currentEntry.text) {
+      const timer = setTimeout(() => {
+        localStorage.setItem('diary_draft', JSON.stringify(currentEntry));
+        setSaveStatus('Draft saved');
+        setTimeout(() => setSaveStatus(''), 3000); // Hide message after 3s
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [currentEntry.text, currentEntry.id]);
+
+  // 3. Feature: Restore draft if you accidentally close the page
+  useEffect(() => {
+    if (!currentEntry.id && !currentEntry.text) {
+      const draft = localStorage.getItem('diary_draft');
+      if (draft) {
+        setCurrentEntry(JSON.parse(draft));
+      }
+    }
+  }, []);
 
   const handleDownloadImage = (e, imageSrc) => {
     e.stopPropagation(); 
@@ -27,16 +59,21 @@ export default function DiaryEditor({ currentEntry, setCurrentEntry, dateInput, 
     setDateInput(formattedDate);
   };
 
-  // NEW: Auto-formats the time input to add the colon as you type
   const handleTimeChange = (e) => {
-    let input = e.target.value.replace(/\D/g, ''); // Remove non-numeric characters
-    if (input.length > 4) input = input.substring(0, 4); // Max 4 digits
+    let input = e.target.value.replace(/\D/g, ''); 
+    if (input.length > 4) input = input.substring(0, 4); 
     
     let formattedTime = '';
     if (input.length > 0) formattedTime = input.substring(0, 2);
     if (input.length > 2) formattedTime += ':' + input.substring(2, 4);
     
     setCurrentEntry({ ...currentEntry, time: formattedTime });
+  };
+
+  // Clears the draft memory once you officially save it to your timeline
+  const handleCommitSave = () => {
+    onSave();
+    localStorage.removeItem('diary_draft');
   };
 
   return (
@@ -50,9 +87,17 @@ export default function DiaryEditor({ currentEntry, setCurrentEntry, dateInput, 
             Past Date
           </button>
         </div>
-        <button type="button" onClick={onSave} className="flex items-center space-x-2 text-sm uppercase tracking-widest text-[#5C554B] hover:text-black transition-colors px-3 py-1">
-          <PenTool size={14} /> <span>Save</span>
-        </button>
+        
+        <div className="flex items-center space-x-4">
+          {saveStatus && (
+            <span className="text-xs italic text-[#8C8173] flex items-center space-x-1 animate-pulse">
+              <CheckCircle2 size={12} /> <span>{saveStatus}</span>
+            </span>
+          )}
+          <button type="button" onClick={handleCommitSave} className="flex items-center space-x-2 text-sm uppercase tracking-widest text-[#5C554B] hover:text-black transition-colors px-3 py-1">
+            <PenTool size={14} /> <span>Save</span>
+          </button>
+        </div>
       </div>
 
       <div className="flex-1 flex flex-col space-y-6">
@@ -65,7 +110,6 @@ export default function DiaryEditor({ currentEntry, setCurrentEntry, dateInput, 
               onChange={handleDateChange} 
               className="bg-transparent border-b border-[#EBE6DF] focus:border-[#8C8173] outline-none py-1 text-lg w-32 transition-colors" 
             />
-            {/* CHANGED: Swapped native time picker for clean text input */}
             <input 
               type="text" 
               placeholder="HH:MM" 
@@ -82,10 +126,11 @@ export default function DiaryEditor({ currentEntry, setCurrentEntry, dateInput, 
         )}
 
         <textarea
+          ref={textareaRef}
           value={currentEntry.text}
           onChange={(e) => setCurrentEntry({ ...currentEntry, text: e.target.value })}
           placeholder="Dear diary..."
-          className="w-full flex-1 bg-transparent resize-none outline-none text-lg md:text-xl leading-relaxed text-[#333333] placeholder:text-[#D1CBC3]"
+          className="w-full bg-transparent resize-none outline-none text-lg md:text-xl leading-relaxed text-[#333333] placeholder:text-[#D1CBC3] overflow-hidden min-h-[300px]"
         />
 
         {currentEntry.images?.length > 0 && (
