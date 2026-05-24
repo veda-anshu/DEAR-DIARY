@@ -14,7 +14,8 @@ export default function DiaryApp() {
   const [currentUser, setCurrentUser] = useState(null);
   const [entries, setEntries] = useState([]);
   const [currentEntry, setCurrentEntry] = useState({ 
-    id: '', date: '', time: '', text: '', images: [], isPastEntry: false 
+    id: '', date: '', time: '', text: '', images: [], isPastEntry: false, 
+    mood: 'neutral', tags: '' // Added Mood and Tags
   });
   const [searchQuery, setSearchQuery] = useState('');
   const [currentDateTime, setCurrentDateTime] = useState(null);
