@@ -1,4 +1,3 @@
-// Date formatting utilities
 export const formatDateToDDMMYYYY = (date) => {
   const d = new Date(date);
   const day = String(d.getDate()).padStart(2, '0');
@@ -14,10 +13,17 @@ export const formatTimeToHHMM = (date) => {
   return `${hours}:${minutes}`;
 };
 
-export const ddmmyyyyToYYYYMMDD = (ddmmyyyy) => {
-  const parts = ddmmyyyy.split('/');
-  if (parts.length === 3 && parts[0].length === 2 && parts[1].length === 2 && parts[2].length === 4) {
-    return `${parts[2]}-${parts[1]}-${parts[0]}`;
+export const ddmmyyyyToYYYYMMDD = (dateStr) => {
+  if (!dateStr) return '';
+  // Supports dashes, slashes, or periods
+  const parts = dateStr.split(/[-/.]/); 
+  if (parts.length === 3) {
+    const day = parts[0].padStart(2, '0');
+    const month = parts[1].padStart(2, '0');
+    const year = parts[2];
+    if (year.length === 4) {
+      return `${year}-${month}-${day}`;
+    }
   }
   return '';
 };

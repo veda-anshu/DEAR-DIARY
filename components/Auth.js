@@ -1,136 +1,72 @@
 import React, { useState } from 'react';
-import { Lock, User, Eye, EyeOff } from 'lucide-react';
+import { PenLine } from 'lucide-react';
 import { registerUser, loginUser } from '../utils/auth';
-import styles from '../styles/auth.module.css';
 
 export default function Auth({ onLogin }) {
   const [authMode, setAuthMode] = useState('login');
-  const [showPassword, setShowPassword] = useState(false);
-  const [credentials, setCredentials] = useState({ 
-    username: '', 
-    password: '', 
-    confirmPassword: '' 
-  });
+  const [credentials, setCredentials] = useState({ username: '', password: '', confirmPassword: '' });
 
-  const handleRegister = () => {
-    const result = registerUser(
-      credentials.username, 
-      credentials.password, 
-      credentials.confirmPassword
-    );
+  const handleAuth = () => {
+    const action = authMode === 'login' ? loginUser(credentials.username, credentials.password) 
+      : registerUser(credentials.username, credentials.password, credentials.confirmPassword);
     
-    if (result.success) {
-      alert(result.message);
-      setAuthMode('login');
-      setCredentials({ username: credentials.username, password: '', confirmPassword: '' });
-    } else {
-      alert(result.message);
-    }
-  };
-
-  const handleLogin = () => {
-    const result = loginUser(credentials.username, credentials.password);
-    
-    if (result.success) {
-      onLogin(result.username);
-    } else {
-      alert(result.message);
-    }
+    if (action.success) {
+      if (authMode === 'login') onLogin(action.username);
+      else {
+        alert('Welcome. You may now open your diary.');
+        setAuthMode('login');
+        setCredentials(prev => ({ ...prev, password: '', confirmPassword: '' }));
+      }
+    } else alert(action.message);
   };
 
   return (
-    <div className={styles.authContainer}>
-      <div className={styles.authCard}>
-        <div className={styles.authHeader}>
-          <div className={styles.iconWrapper}>
-            <Lock size={40} />
-          </div>
-          <h1 className={styles.title}>My Private Diary</h1>
-          <p className={styles.subtitle}>Your thoughts, securely stored</p>
+    <div className="min-h-screen flex items-center justify-center bg-[#FDFCF8] p-4 font-serif text-[#333333]">
+      <div className="w-full max-w-sm">
+        <div className="flex flex-col items-center mb-12">
+          <PenLine size={32} className="text-[#8C8173] mb-4" />
+          <h1 className="text-3xl tracking-widest uppercase font-semibold mb-2">My Diary</h1>
+          <p className="text-[#8C8173] italic">Put your thoughts to paper.</p>
         </div>
 
-        <div className={styles.tabContainer}>
-          <button
-            onClick={() => setAuthMode('login')}
-            className={`${styles.tab} ${authMode === 'login' ? styles.activeTab : ''}`}
-          >
-            Login
-          </button>
-          <button
-            onClick={() => setAuthMode('register')}
-            className={`${styles.tab} ${authMode === 'register' ? styles.activeTab : ''}`}
-          >
-            Register
-          </button>
+        <div className="flex space-x-6 justify-center mb-8 border-b border-[#EBE6DF] pb-2">
+          <button onClick={() => setAuthMode('login')} className={`uppercase tracking-widest text-sm transition-colors ${authMode === 'login' ? 'text-[#333333] font-semibold' : 'text-[#D1CBC3] hover:text-[#8C8173]'}`}>Read</button>
+          <button onClick={() => setAuthMode('register')} className={`uppercase tracking-widest text-sm transition-colors ${authMode === 'register' ? 'text-[#333333] font-semibold' : 'text-[#D1CBC3] hover:text-[#8C8173]'}`}>Begin</button>
         </div>
 
-        <div className={styles.formContainer}>
-          <div className={styles.inputGroup}>
-            <label className={styles.label}>Username</label>
-            <div className={styles.inputWrapper}>
-              <User className={styles.inputIcon} size={20} />
-              <input
-                type="text"
-                value={credentials.username}
-                onChange={(e) => setCredentials({ ...credentials, username: e.target.value })}
-                placeholder="Enter username"
-                className={styles.input}
-                onKeyPress={(e) => e.key === 'Enter' && (authMode === 'login' ? handleLogin() : handleRegister())}
-              />
-            </div>
-          </div>
+        <div className="space-y-6 font-sans">
+          <input 
+            type="text" 
+            placeholder="Your Name" 
+            value={credentials.username} 
+            onChange={(e) => setCredentials({ ...credentials, username: e.target.value })} 
+            onKeyPress={(e) => e.key === 'Enter' && handleAuth()} 
+            className="w-full bg-transparent border-b border-[#EBE6DF] focus:border-[#8C8173] outline-none py-2 text-[#333333] placeholder:text-[#D1CBC3] placeholder:font-serif placeholder:italic transition-colors" 
+          />
 
-          <div className={styles.inputGroup}>
-            <label className={styles.label}>Password</label>
-            <div className={styles.inputWrapper}>
-              <Lock className={styles.inputIcon} size={20} />
-              <input
-                type={showPassword ? 'text' : 'password'}
-                value={credentials.password}
-                onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}
-                placeholder="Enter password"
-                className={styles.input}
-                onKeyPress={(e) => e.key === 'Enter' && (authMode === 'login' ? handleLogin() : handleRegister())}
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className={styles.eyeButton}
-              >
-                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-              </button>
-            </div>
-          </div>
+          <input 
+            type="password" 
+            placeholder="Secret Key" 
+            value={credentials.password} 
+            onChange={(e) => setCredentials({ ...credentials, password: e.target.value })} 
+            onKeyPress={(e) => e.key === 'Enter' && handleAuth()} 
+            className="w-full bg-transparent border-b border-[#EBE6DF] focus:border-[#8C8173] outline-none py-2 text-[#333333] placeholder:text-[#D1CBC3] placeholder:font-serif placeholder:italic transition-colors" 
+          />
 
           {authMode === 'register' && (
-            <div className={styles.inputGroup}>
-              <label className={styles.label}>Confirm Password</label>
-              <div className={styles.inputWrapper}>
-                <Lock className={styles.inputIcon} size={20} />
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  value={credentials.confirmPassword}
-                  onChange={(e) => setCredentials({ ...credentials, confirmPassword: e.target.value })}
-                  placeholder="Confirm password"
-                  className={styles.input}
-                  onKeyPress={(e) => e.key === 'Enter' && handleRegister()}
-                />
-              </div>
-            </div>
+            <input 
+              type="password" 
+              placeholder="Confirm Secret Key" 
+              value={credentials.confirmPassword} 
+              onChange={(e) => setCredentials({ ...credentials, confirmPassword: e.target.value })} 
+              onKeyPress={(e) => e.key === 'Enter' && handleAuth()} 
+              className="w-full bg-transparent border-b border-[#EBE6DF] focus:border-[#8C8173] outline-none py-2 text-[#333333] placeholder:text-[#D1CBC3] placeholder:font-serif placeholder:italic transition-colors" 
+            />
           )}
 
-          <button
-            onClick={authMode === 'login' ? handleLogin : handleRegister}
-            className={styles.submitButton}
-          >
-            {authMode === 'login' ? 'Login' : 'Create Account'}
+          <button onClick={handleAuth} className="w-full pt-8 font-serif uppercase tracking-widest text-sm text-[#5C554B] hover:text-[#333333] transition-colors">
+            {authMode === 'login' ? 'Unlock Diary' : 'Inscribe Name'}
           </button>
-
-          {authMode === 'register' && (
-            <p className={styles.hint}>
-              Password must be at least 6 characters long
-            </p>
-          )}
         </div>
       </div>
     </div>

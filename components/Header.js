@@ -1,50 +1,25 @@
 import React from 'react';
-import { Calendar, Clock, User, LogOut } from 'lucide-react';
-import { formatDateToDDMMYYYY, formatTimeToHHMM } from '../utils/dateUtils';
-import styles from '../styles/diary.module.css';
+import { BookOpen } from 'lucide-react';
 
-export default function Header({ currentUser, currentDateTime, onLogout, onExport, onImport }) {
+export default function Header({ currentUser, onLogout, onExport, onImport }) {
   return (
-    <header className={styles.header}>
-      <div className={styles.headerTop}>
-        <div>
-          <h1 className={styles.headerTitle}>
-            <Calendar className={styles.headerIcon} />
-            My Daily Diary
-          </h1>
-          <p className={styles.headerSubtitle}>
-            <User size={16} />
-            Welcome, {currentUser}!
-          </p>
-        </div>
-        <div className={styles.dateTimeDisplay}>
-          <div className={styles.dateDisplay}>
-            <Calendar size={24} />
-            {formatDateToDDMMYYYY(currentDateTime)}
-          </div>
-          <div className={styles.timeDisplay}>
-            <Clock size={20} />
-            {formatTimeToHHMM(currentDateTime)}
-          </div>
-        </div>
+    <header className="px-6 py-4 flex justify-between items-center bg-[#FDFCF8] border-b border-[#EBE6DF]">
+      <div className="flex items-center space-x-3">
+        <BookOpen className="text-[#8C8173]" size={20} />
+        <span className="text-lg tracking-widest uppercase font-semibold text-[#333333]">Volume I.</span>
       </div>
-      <div className={styles.headerActions}>
-        <button onClick={onExport} className={styles.exportButton}>
-          Export
-        </button>
-        <label className={styles.importButton}>
-          Import
-          <input
-            type="file"
-            accept=".json"
-            onChange={onImport}
-            className={styles.fileInput}
-          />
-        </label>
-        <button onClick={onLogout} className={styles.logoutButton}>
-          <LogOut size={16} />
-          Logout
-        </button>
+      
+      <div className="flex items-center space-x-6 text-sm font-sans text-[#8C8173]">
+        <span className="hidden md:inline">Author: <span className="text-[#333333] font-serif italic">{currentUser}</span></span>
+        
+        <div className="flex space-x-4 uppercase tracking-widest text-xs">
+          <button onClick={onExport} className="hover:text-[#333333] transition-colors">Export</button>
+          <label className="hover:text-[#333333] cursor-pointer transition-colors">
+            Import
+            <input type="file" accept=".json" onChange={onImport} className="hidden" />
+          </label>
+          <button onClick={onLogout} className="hover:text-black transition-colors">Close</button>
+        </div>
       </div>
     </header>
   );
