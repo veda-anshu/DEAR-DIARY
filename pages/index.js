@@ -12,11 +12,11 @@ export default function DiaryApp() {
   const [isClient, setIsClient] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
+  
   const [entries, setEntries] = useState([]);
-  const [currentEntry, setCurrentEntry] = useState({ 
-    id: '', date: '', time: '', text: '', images: [], isPastEntry: false, 
-    mood: 'neutral', tags: '' // Added Mood and Tags
-  });
+  const [sidebarWidth, setSidebarWidth] = useState(350);
+  const [currentEntry, setCurrentEntry] = useState({ id: '', date: '', time: '', text: '', images: [], isPastEntry: false, tags: '' });
+  
   const [searchQuery, setSearchQuery] = useState('');
   const [currentDateTime, setCurrentDateTime] = useState(null);
   const [dateInput, setDateInput] = useState('');
@@ -26,7 +26,6 @@ export default function DiaryApp() {
     setIsClient(true);
     setCurrentDateTime(new Date());
     const timer = setInterval(() => setCurrentDateTime(new Date()), 1000);
-    
     const user = checkAuth();
     if (user) {
       setCurrentUser(user);
@@ -45,7 +44,7 @@ export default function DiaryApp() {
   };
 
   const handleLogout = () => {
-    if (confirm('Close your diary?')) {
+    if (window.confirm('Close your diary?')) {
       logoutUser();
       setCurrentUser(null);
       setIsAuthenticated(false);
@@ -55,74 +54,34 @@ export default function DiaryApp() {
   };
 
   const handleSaveEntry = () => {
-    // 1. Check if the entry is empty
-    if (!currentEntry.text || !currentEntry.text.trim()) {
-      alert("You need to write something before saving!");
-      return;
-    }
+    if (!currentEntry.text || !currentEntry.text.trim()) return window.alert("You need to write something before saving!");
 
     let entryDate = new Date().toISOString().split('T')[0];
     let entryTime = formatTimeToHHMM(new Date());
 
-    // 2. Perform Strict Validation if it's a Past Entry
     if (currentEntry.isPastEntry) {
-      const timeValue = currentEntry.time || '12:00';
-      
-      // Validate Time (HH:MM format, max 23:59)
-      const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
-      if (!timeRegex.test(timeValue)) {
-        alert("Please enter a valid time between 00:00 and 23:59.");
-        return;
-      }
-      entryTime = timeValue;
+      if (!/^([01]\d|2[0-3]):([0-5]\d)$/.test(currentEntry.time)) return window.alert("Please enter a valid time (HH:MM).");
+      entryTime = currentEntry.time;
+      if (!/^(0[1-9]|[12]\d|3[01])\/(0[1-9]|1[0-2])\/\d{4}$/.test(dateInput)) return window.alert("Please enter a valid date in DD/MM/YYYY format.");
 
-      // Validate Date Format (DD/MM/YYYY)
-      const dateRegex = /^(0[1-9]|[12]\d|3[01])\/(0[1-9]|1[0-2])\/\d{4}$/;
-      if (!dateRegex.test(dateInput)) {
-        alert("Please enter a valid date in DD/MM/YYYY format.");
-        return;
-      }
-
-      // Validate Real Calendar Dates (e.g. Catch February 30th)
-      const parts = dateInput.split('/');
-      const day = parseInt(parts[0], 10);
-      const month = parseInt(parts[1], 10) - 1; // JS months are 0-11
-      const year = parseInt(parts[2], 10);
-      const checkDate = new Date(year, month, day);
-      
-      if (checkDate.getFullYear() !== year || checkDate.getMonth() !== month || checkDate.getDate() !== day) {
-         alert("That date does not exist on the calendar.");
-         return;
-      }
-
-      // Prevent Future Dates
-      if (checkDate > new Date()) {
-         alert("You cannot log a diary entry for the future!");
-         return;
-      }
-
+      const [d, m, y] = dateInput.split('/').map(Number);
+      const checkDate = new Date(y, m - 1, d);
+      if (checkDate.getFullYear() !== y || checkDate.getMonth() !== m - 1 || checkDate.getDate() !== d || checkDate > new Date()) return window.alert("That date does not exist or is in the future.");
       entryDate = ddmmyyyyToYYYYMMDD(dateInput);
     }
 
-    const entryToSave = {
-      ...currentEntry,
-      id: currentEntry.id || Date.now().toString(),
-      date: entryDate,
-      time: entryTime,
-      text: currentEntry.text.trim()
-    };
-
+    const entryToSave = { ...currentEntry, id: currentEntry.id || Date.now().toString(), date: entryDate, time: entryTime, text: currentEntry.text.trim() };
     const result = saveEntry(entryToSave, entries, currentUser);
+    
     if (result.success) {
       setEntries(result.entries);
       handleNewEntry();
     } else {
-      alert("Failed to save: " + result.message);
+      window.alert("Failed to save your entry.");
     }
   };
 
   const handleDeleteEntry = (id) => {
-    if (!confirm('Discard this entry?')) return;
     const result = deleteEntry(id, entries, currentUser);
     if (result.success) {
       setEntries(result.entries);
@@ -132,91 +91,48 @@ export default function DiaryApp() {
 
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
-    if (files.length + currentEntry.images.length > 5) return alert('Max 5 photos allowed.');
-
+    if (files.length + currentEntry.images.length > 5) return window.alert('Max 5 photos allowed per entry.');
     Promise.all(files.map(file => new Promise((resolve) => {
       const reader = new FileReader();
       reader.onloadend = () => resolve(reader.result);
       reader.readAsDataURL(file);
-    }))).then(images => {
-      setCurrentEntry(prev => ({ ...prev, images: [...prev.images, ...images] }));
-    });
+    }))).then(images => setCurrentEntry(prev => ({ ...prev, images: [...prev.images, ...images] })));
   };
 
-  const handleRemoveImage = (index) => {
-    setCurrentEntry(prev => ({ ...prev, images: prev.images.filter((_, i) => i !== index) }));
-  };
+  const handleRemoveImage = (index) => setCurrentEntry(prev => ({ ...prev, images: prev.images.filter((_, i) => i !== index) }));
 
   const handleLoadEntry = (entry) => {
-    setCurrentEntry({ ...entry, images: entry.images || [] });
+    setCurrentEntry({ ...entry, images: entry.images || [], tags: entry.tags || '' });
     if (entry.isPastEntry || entry.date !== new Date().toISOString().split('T')[0]) {
       setDateInput(yyyymmddToDDMMYYYY(entry.date));
       setCurrentEntry(prev => ({ ...prev, isPastEntry: true }));
-    } else {
-      setDateInput('');
-    }
+    } else setDateInput('');
   };
 
-  const handleNewEntry = () => {
-    setCurrentEntry({ id: '', date: '', time: '', text: '', images: [], isPastEntry: false });
-    setDateInput('');
-  };
-
-  const handlePastEntry = () => {
-    setCurrentEntry({ id: '', date: '', time: '', text: '', images: [], isPastEntry: true });
-    setDateInput('');
-  };
-
-  const executeExport = (entriesToExport, format) => {
-    exportEntries(entriesToExport, currentUser, format);
-  };
-
-  const handleImport = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    importEntries(file, currentUser, (result) => {
-      if (result.success) setEntries(loadEntries(currentUser));
-      else alert(result.message);
-    });
-  };
+  const handleNewEntry = () => { setCurrentEntry({ id: '', date: '', time: '', text: '', images: [], isPastEntry: false, tags: '' }); setDateInput(''); };
+  const handlePastEntry = () => { setCurrentEntry({ id: '', date: '', time: '', text: '', images: [], isPastEntry: true, tags: '' }); setDateInput(''); };
 
   if (!isAuthenticated) return <Auth onLogin={handleLogin} />;
 
   return (
-    <div className="min-h-screen bg-[#FDFCF8] text-[#333333] font-serif selection:bg-[#EAE4D9]">
-      <Header 
-        currentUser={currentUser} 
-        currentDateTime={currentDateTime} 
-        onLogout={handleLogout} 
-        onExport={() => setShowExportModal(true)} 
-        onImport={handleImport} 
-      />
+    <div className="min-h-screen bg-[#FDFCF8] text-[#333333] font-serif selection:bg-[#EAE4D9] transition-colors">
+      <Header currentUser={currentUser} onLogout={handleLogout} onExport={() => setShowExportModal(true)} onImport={(e) => importEntries(e.target.files[0], currentUser, (res) => res.success ? setEntries(loadEntries(currentUser)) : window.alert(res.message))} />
       
-      <div className="max-w-6xl mx-auto px-4 py-8 md:py-12 flex flex-col md:flex-row gap-12">
-        <aside className="md:w-1/3 shrink-0 h-[600px] md:h-[calc(100vh-8rem)]">
-          <DiaryList entries={entries} searchQuery={searchQuery} setSearchQuery={setSearchQuery} onLoadEntry={handleLoadEntry} onDeleteEntry={handleDeleteEntry} />
-        </aside>
-        
-        <main className="md:w-2/3 flex-1">
+      <div className="max-w-7xl mx-auto px-4 py-8 flex relative h-[calc(100vh-80px)] transition-all" style={{ gap: sidebarWidth > 0 ? '2rem' : '0rem' }}>
+        <DiaryList 
+          entries={entries} searchQuery={searchQuery} setSearchQuery={setSearchQuery} 
+          onLoadEntry={handleLoadEntry} onDeleteEntry={handleDeleteEntry} 
+          width={sidebarWidth} onResize={setSidebarWidth} showConfirm={(msg, action) => { if(window.confirm(msg)) action(); }}
+        />
+        <main className="flex-1 min-w-0 transition-all overflow-y-auto pr-4">
           <DiaryEditor
-            currentEntry={currentEntry} setCurrentEntry={setCurrentEntry}
-            dateInput={dateInput} setDateInput={setDateInput}
-            currentDateTime={currentDateTime}
-            onSave={handleSaveEntry} 
-            onNewEntry={handleNewEntry}
-            onPastEntry={handlePastEntry}
-            onImageUpload={handleImageUpload} onRemoveImage={handleRemoveImage}
+            currentEntry={currentEntry} setCurrentEntry={setCurrentEntry} dateInput={dateInput} setDateInput={setDateInput} currentDateTime={currentDateTime}
+            onSave={handleSaveEntry} onNewEntry={handleNewEntry} onPastEntry={handlePastEntry}
+            onImageUpload={handleImageUpload} onRemoveImage={handleRemoveImage} showConfirm={(msg, action) => { if(window.confirm(msg)) action(); }}
           />
         </main>
       </div>
-
-      {showExportModal && (
-        <ExportModal 
-          entries={entries} 
-          onClose={() => setShowExportModal(false)} 
-          onExport={executeExport} 
-        />
-      )}
+      {showExportModal && <ExportModal entries={entries} onClose={() => setShowExportModal(false)} onExport={(e, f) => exportEntries(e, currentUser, f)} />}
     </div>
   );
 }

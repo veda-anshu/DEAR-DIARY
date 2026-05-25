@@ -11,23 +11,75 @@
 }
 
 body {
-  /* Applies the new elegant book font globally */
   font-family: 'Lora', serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  background-color: #FDFCF8; /* Default Light Mode */
 }
 
-/* Custom, elegant scrollbars */
-::-webkit-scrollbar {
-  width: 6px;
+/* Custom scrollbars */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #EBE6DF; border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: #D1CBC3; }
+
+/* -------------------------------------------------------------------------- */
+/* THEME: TRUE PROFESSIONAL DARK MODE (No Config Required)                      */
+/* -------------------------------------------------------------------------- */
+body.dark-mode {
+  background-color: #161514 !important;
+  color: #E8E4DF !important;
 }
-::-webkit-scrollbar-track {
-  background: transparent;
+
+/* Base Overrides */
+.dark-mode .bg-\[\#FDFCF8\], 
+.dark-mode .bg-white { 
+  background-color: #161514 !important; 
 }
-::-webkit-scrollbar-thumb {
-  background: #EBE6DF;
-  border-radius: 10px;
+.dark-mode .bg-\[\#F4F1EA\] { 
+  background-color: #22201E !important; 
 }
-::-webkit-scrollbar-thumb:hover {
-  background: #D1CBC3;
+.dark-mode .bg-\[\#EBE6DF\] { 
+  background-color: #33302D !important; 
+  color: #E8E4DF !important;
 }
+
+/* Border Overrides */
+.dark-mode .border-\[\#EBE6DF\] { 
+  border-color: #3A3632 !important; 
+}
+
+/* Text Overrides */
+.dark-mode .text-\[\#333333\], 
+.dark-mode .text-black { 
+  color: #F5F2EB !important; 
+}
+.dark-mode .text-\[\#5C554B\] { 
+  color: #C0B9B0 !important; 
+}
+.dark-mode .text-\[\#8C8173\] { 
+  color: #8C8173 !important; 
+}
+
+/* Input / Textarea Overrides */
+.dark-mode input, 
+.dark-mode textarea { 
+  color: #E8E4DF !important; 
+  border-color: #3A3632 !important; 
+}
+.dark-mode input::placeholder, 
+.dark-mode textarea::placeholder { 
+  color: #5C554B !important; 
+}
+
+/* Button Overrides */
+.dark-mode button.bg-\[\#333333\] {
+  background-color: #E8E4DF !important;
+  color: #161514 !important;
+}
+.dark-mode button.bg-\[\#333333\]:hover {
+  background-color: #FFFFFF !important;
+}
+.dark-mode .hover\:bg-\[\#F4F1EA\]:hover { background-color: #22201E !important; }
+.dark-mode .hover\:text-\[\#333333\]:hover { color: #FFFFFF !important; }
