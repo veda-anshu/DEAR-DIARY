@@ -28,7 +28,6 @@ export default function ExportModal({ entries, onClose, onExport }) {
     onClose();
   };
 
-  // Filter entries based on the search query
   const filteredEntries = entries.filter(entry => {
     if (!searchQuery) return true;
     const query = searchQuery.toLowerCase();

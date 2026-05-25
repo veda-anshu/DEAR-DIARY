@@ -15,7 +15,6 @@ export const formatTimeToHHMM = (date) => {
 
 export const ddmmyyyyToYYYYMMDD = (dateStr) => {
   if (!dateStr) return '';
-  // Supports dashes, slashes, or periods
   const parts = dateStr.split(/[-/.]/); 
   if (parts.length === 3) {
     const day = parts[0].padStart(2, '0');

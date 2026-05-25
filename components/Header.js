@@ -5,7 +5,6 @@ export default function Header({ currentUser, onLogout, onExport, onImport }) {
   const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
-    // Check if they previously set dark mode
     const savedTheme = localStorage.getItem('diary_theme');
     if (savedTheme === 'dark') {
       document.body.classList.add('dark-mode');

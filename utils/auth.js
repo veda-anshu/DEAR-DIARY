@@ -27,7 +27,6 @@ export const loginUser = (username, password) => {
 
   if (!user) return { success: false, message: 'This name is not inscribed yet.' };
 
-  // Backwards compatibility for old accounts vs new encoded accounts
   let isValid = false;
   if (typeof user === 'string') {
      isValid = (user === password);

@@ -37,7 +37,6 @@ export default function DiaryList({ entries, searchQuery, setSearchQuery, onLoad
       className={`h-full flex flex-col relative shrink-0 transition-opacity ${isHidden ? 'border-r-0' : 'border-r border-[#EBE6DF] pr-4'}`} 
       style={{ width: `${width}px` }}
     >
-      {/* Draggable Handle - Stays visible even when width is 0 */}
       <div 
         onMouseDown={handleMouseDown}
         className="absolute -right-2 top-0 w-4 h-full cursor-col-resize hover:bg-[#8C8173]/20 transition-colors z-20"

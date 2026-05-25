@@ -18,21 +18,16 @@ body {
   background-color: #FDFCF8; /* Default Light Mode */
 }
 
-/* Custom scrollbars */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #EBE6DF; border-radius: 10px; }
 ::-webkit-scrollbar-thumb:hover { background: #D1CBC3; }
 
-/* -------------------------------------------------------------------------- */
-/* THEME: TRUE PROFESSIONAL DARK MODE (No Config Required)                      */
-/* -------------------------------------------------------------------------- */
 body.dark-mode {
   background-color: #161514 !important;
   color: #E8E4DF !important;
 }
 
-/* Base Overrides */
 .dark-mode .bg-\[\#FDFCF8\], 
 .dark-mode .bg-white { 
   background-color: #161514 !important; 
@@ -45,12 +40,10 @@ body.dark-mode {
   color: #E8E4DF !important;
 }
 
-/* Border Overrides */
 .dark-mode .border-\[\#EBE6DF\] { 
   border-color: #3A3632 !important; 
 }
 
-/* Text Overrides */
 .dark-mode .text-\[\#333333\], 
 .dark-mode .text-black { 
   color: #F5F2EB !important; 
@@ -62,7 +55,6 @@ body.dark-mode {
   color: #8C8173 !important; 
 }
 
-/* Input / Textarea Overrides */
 .dark-mode input, 
 .dark-mode textarea { 
   color: #E8E4DF !important; 
