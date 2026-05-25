@@ -34,3 +34,5 @@ next-env.d.ts
 
 # lock files (optional - remove if you want to commit them)
 package-lock.json
+
+.env.local
