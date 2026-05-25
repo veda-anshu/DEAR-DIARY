@@ -15,7 +15,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   transition: background-color 0.3s ease, color 0.3s ease;
-  background-color: #FDFCF8; /* Default Light Mode */
+  background-color: #FDFCF8;
 }
 
 ::-webkit-scrollbar { width: 6px; }
@@ -23,6 +23,7 @@ body {
 ::-webkit-scrollbar-thumb { background: #EBE6DF; border-radius: 10px; }
 ::-webkit-scrollbar-thumb:hover { background: #D1CBC3; }
 
+/* Force Dark Mode Override */
 body.dark-mode {
   background-color: #161514 !important;
   color: #E8E4DF !important;
@@ -65,7 +66,6 @@ body.dark-mode {
   color: #5C554B !important; 
 }
 
-/* Button Overrides */
 .dark-mode button.bg-\[\#333333\] {
   background-color: #E8E4DF !important;
   color: #161514 !important;

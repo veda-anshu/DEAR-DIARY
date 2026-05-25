@@ -41,7 +41,7 @@ export default function Auth({ onLogin }) {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#FDFCF8] p-4 font-serif text-[#333333] transition-colors dark:bg-[#161514] dark:text-[#E8E4DF]">
+    <div className="min-h-screen flex items-center justify-center bg-[#FDFCF8] p-4 font-serif text-[#333333] transition-colors">
       <div className="w-full max-w-sm">
         <div className="flex flex-col items-center mb-12">
           <PenLine size={32} className="text-[#8C8173] mb-4" />
@@ -49,25 +49,25 @@ export default function Auth({ onLogin }) {
           <p className="text-[#8C8173] italic">Put your thoughts to paper.</p>
         </div>
 
-        <div className="flex space-x-6 justify-center mb-8 border-b border-[#EBE6DF] pb-2 dark:border-[#3A3632]">
-          <button type="button" onClick={() => handleModeSwitch('login')} className={`uppercase tracking-widest text-sm transition-colors ${authMode === 'login' ? 'text-[#333333] dark:text-[#F5F2EB] font-semibold' : 'text-[#D1CBC3] hover:text-[#8C8173] dark:text-[#5C554B] dark:hover:text-[#8C8173]'}`}>Read</button>
-          <button type="button" onClick={() => handleModeSwitch('register')} className={`uppercase tracking-widest text-sm transition-colors ${authMode === 'register' ? 'text-[#333333] dark:text-[#F5F2EB] font-semibold' : 'text-[#D1CBC3] hover:text-[#8C8173] dark:text-[#5C554B] dark:hover:text-[#8C8173]'}`}>Begin</button>
+        <div className="flex space-x-6 justify-center mb-8 border-b border-[#EBE6DF] pb-2">
+          <button type="button" onClick={() => handleModeSwitch('login')} className={`uppercase tracking-widest text-sm transition-colors ${authMode === 'login' ? 'text-[#333333] font-semibold' : 'text-[#D1CBC3] hover:text-[#8C8173]'}`}>Read</button>
+          <button type="button" onClick={() => handleModeSwitch('register')} className={`uppercase tracking-widest text-sm transition-colors ${authMode === 'register' ? 'text-[#333333] font-semibold' : 'text-[#D1CBC3] hover:text-[#8C8173]'}`}>Begin</button>
         </div>
 
         <form onSubmit={handleAuth} className="space-y-6 font-sans">
-          <input type="text" placeholder="Your Name" value={credentials.username} onChange={(e) => { setCredentials({ ...credentials, username: e.target.value }); setErrorMsg(''); }} className="w-full bg-transparent border-b border-[#EBE6DF] focus:border-[#8C8173] outline-none py-2 text-[#333333] placeholder:text-[#D1CBC3] placeholder:font-serif placeholder:italic transition-colors dark:border-[#3A3632] dark:text-[#E8E4DF] dark:placeholder:text-[#5C554B]" />
-          <input type="password" placeholder="Secret Key" value={credentials.password} onChange={(e) => { setCredentials({ ...credentials, password: e.target.value }); setErrorMsg(''); }} className="w-full bg-transparent border-b border-[#EBE6DF] focus:border-[#8C8173] outline-none py-2 text-[#333333] placeholder:text-[#D1CBC3] placeholder:font-serif placeholder:italic transition-colors dark:border-[#3A3632] dark:text-[#E8E4DF] dark:placeholder:text-[#5C554B]" />
+          <input type="text" placeholder="Your Name" value={credentials.username} onChange={(e) => { setCredentials({ ...credentials, username: e.target.value }); setErrorMsg(''); }} className="w-full bg-transparent border-b border-[#EBE6DF] focus:border-[#8C8173] outline-none py-2 text-[#333333] placeholder:text-[#D1CBC3] placeholder:font-serif placeholder:italic transition-colors" />
+          <input type="password" placeholder="Secret Key" value={credentials.password} onChange={(e) => { setCredentials({ ...credentials, password: e.target.value }); setErrorMsg(''); }} className="w-full bg-transparent border-b border-[#EBE6DF] focus:border-[#8C8173] outline-none py-2 text-[#333333] placeholder:text-[#D1CBC3] placeholder:font-serif placeholder:italic transition-colors" />
           
           {authMode === 'register' && (
-            <input type="password" placeholder="Confirm Secret Key" value={credentials.confirmPassword} onChange={(e) => { setCredentials({ ...credentials, confirmPassword: e.target.value }); setErrorMsg(''); }} className="w-full bg-transparent border-b border-[#EBE6DF] focus:border-[#8C8173] outline-none py-2 text-[#333333] placeholder:text-[#D1CBC3] placeholder:font-serif placeholder:italic transition-colors dark:border-[#3A3632] dark:text-[#E8E4DF] dark:placeholder:text-[#5C554B]" />
+            <input type="password" placeholder="Confirm Secret Key" value={credentials.confirmPassword} onChange={(e) => { setCredentials({ ...credentials, confirmPassword: e.target.value }); setErrorMsg(''); }} className="w-full bg-transparent border-b border-[#EBE6DF] focus:border-[#8C8173] outline-none py-2 text-[#333333] placeholder:text-[#D1CBC3] placeholder:font-serif placeholder:italic transition-colors" />
           )}
 
-          <button type="submit" className="w-full pt-8 font-serif uppercase tracking-widest text-sm text-[#5C554B] hover:text-[#333333] transition-colors dark:text-[#8C8173] dark:hover:text-[#F5F2EB]">
+          <button type="submit" className="w-full pt-8 font-serif uppercase tracking-widest text-sm text-[#5C554B] hover:text-[#333333] transition-colors">
             {authMode === 'login' ? 'Unlock Diary' : 'Inscribe Name'}
           </button>
 
-          {errorMsg && <div className="text-[#8C8173] text-[10px] tracking-widest uppercase text-center mt-6 p-3 bg-[#F4F1EA] rounded-md border border-[#EBE6DF] dark:bg-[#22201E] dark:border-[#3A3632]">{errorMsg}</div>}
-          {successMsg && <div className="text-[#5C554B] font-semibold text-[10px] tracking-widest uppercase text-center mt-6 p-3 bg-[#EAE4D9] rounded-md border border-[#EBE6DF] dark:bg-[#33302D] dark:border-[#3A3632] dark:text-[#F5F2EB]">{successMsg}</div>}
+          {errorMsg && <div className="text-[#8C8173] text-[10px] tracking-widest uppercase text-center mt-6 p-3 bg-[#F4F1EA] rounded-md border border-[#EBE6DF]">{errorMsg}</div>}
+          {successMsg && <div className="text-[#5C554B] font-semibold text-[10px] tracking-widest uppercase text-center mt-6 p-3 bg-[#EAE4D9] rounded-md border border-[#EBE6DF]">{successMsg}</div>}
         </form>
       </div>
     </div>

@@ -8,17 +8,16 @@ import { checkAuth, logoutUser } from '../utils/auth';
 import { loadEntries, saveEntry, deleteEntry, exportEntries, importEntries } from '../utils/diary';
 import { formatTimeToHHMM, ddmmyyyyToYYYYMMDD, yyyymmddToDDMMYYYY } from '../utils/dateUtils';
 
-// --- CUSTOM MODAL ---
 const CustomModal = ({ config }) => {
   if (!config) return null;
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-      <div className="bg-[#FDFCF8] rounded-xl shadow-2xl p-8 max-w-sm w-full border border-[#EBE6DF] text-center transition-colors dark:bg-[#1E1E1E] dark:border-[#333333]">
-        <h3 className="text-lg font-serif font-semibold text-[#333333] mb-4 uppercase tracking-widest dark:text-[#F5F2EB]">{config.title}</h3>
-        <p className="text-[#5C554B] text-sm mb-8 dark:text-[#C0B9B0]">{config.message}</p>
+      <div className="bg-[#FDFCF8] rounded-xl shadow-2xl p-8 max-w-sm w-full border border-[#EBE6DF] text-center transition-colors">
+        <h3 className="text-lg font-serif font-semibold text-[#333333] mb-4 uppercase tracking-widest">{config.title}</h3>
+        <p className="text-[#5C554B] text-sm mb-8">{config.message}</p>
         <div className="flex justify-center space-x-4">
-          {config.type === 'confirm' && <button onClick={config.onCancel} type="button" className="text-xs uppercase tracking-widest text-[#8C8173] hover:text-[#333333] transition-colors dark:hover:text-[#F5F2EB]">Cancel</button>}
-          <button onClick={config.onConfirm} type="button" className="text-xs uppercase tracking-widest bg-[#333333] text-[#FDFCF8] px-6 py-2 rounded hover:bg-black transition-colors font-semibold dark:bg-[#E8E4DF] dark:text-[#161514] dark:hover:bg-white">
+          {config.type === 'confirm' && <button onClick={config.onCancel} type="button" className="text-xs uppercase tracking-widest text-[#8C8173] hover:text-[#333333] transition-colors">Cancel</button>}
+          <button onClick={config.onConfirm} type="button" className="text-xs uppercase tracking-widest bg-[#333333] text-[#FDFCF8] px-6 py-2 rounded hover:bg-black transition-colors font-semibold">
             {config.type === 'alert' ? 'OK' : 'Confirm'}
           </button>
         </div>
@@ -57,6 +56,13 @@ export default function DiaryApp() {
       loadEntries(user).then(data => setEntries(data));
     }
     return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('diary_theme');
+    if (savedTheme === 'dark') {
+      document.body.classList.add('dark-mode');
+    }
   }, []);
 
   if (!isClient) return null;
@@ -140,7 +146,7 @@ export default function DiaryApp() {
   if (!isAuthenticated) return <Auth onLogin={handleLogin} />;
 
   return (
-    <div className="min-h-screen bg-[#FDFCF8] text-[#333333] font-serif selection:bg-[#EAE4D9] transition-colors dark:bg-[#161514] dark:text-[#E8E4DF]">
+    <div className="min-h-screen bg-[#FDFCF8] text-[#333333] font-serif selection:bg-[#EAE4D9] transition-colors">
       <Header currentUser={currentUser} onLogout={handleLogout} onExport={() => setShowExportModal(true)} onImport={(e) => importEntries(e.target.files[0], currentUser, (res) => res.success ? setEntries(res.entries) : showAlert(res.message, "Import Error"))} />
       
       <div className="max-w-7xl mx-auto px-4 py-8 flex relative h-[calc(100vh-80px)] transition-all" style={{ gap: sidebarWidth > 0 ? '2rem' : '0rem' }}>
