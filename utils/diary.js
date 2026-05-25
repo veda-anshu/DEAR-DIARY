@@ -1,3 +1,6 @@
+import { db } from './firebase';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+
 const safeGetTime = (entry) => {
   try {
     if (!entry || !entry.date) return 0;
@@ -9,60 +12,51 @@ const safeGetTime = (entry) => {
   }
 };
 
-export const loadEntries = (username) => {
+export const loadEntries = async (username) => {
   try {
-    const userEntriesKey = `diaryEntries_${username}`;
-    const stored = localStorage.getItem(userEntriesKey);
-    
-    if (stored) {
-      const loadedEntries = JSON.parse(stored);
-      if (!Array.isArray(loadedEntries)) return [];
+    const docRef = doc(db, "diaries", username);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      const loadedEntries = docSnap.data().entries || [];
       return loadedEntries.sort((a, b) => safeGetTime(b) - safeGetTime(a));
     }
     return [];
   } catch (error) {
-    console.error('Failed to load entries:', error);
     return [];
   }
 };
 
-export const saveEntry = (entry, entries, username) => {
+export const saveEntry = async (entry, entries, username) => {
   try {
     const safeEntries = Array.isArray(entries) ? entries : [];
     let updatedEntries;
     
     const exists = safeEntries.some(e => e.id === entry.id);
-    if (exists) {
-      updatedEntries = safeEntries.map(e => e.id === entry.id ? entry : e);
-    } else {
-      updatedEntries = [...safeEntries, entry];
-    }
+    if (exists) updatedEntries = safeEntries.map(e => e.id === entry.id ? entry : e);
+    else updatedEntries = [...safeEntries, entry];
     
     const sortedEntries = updatedEntries.sort((a, b) => safeGetTime(b) - safeGetTime(a));
-    const userEntriesKey = `diaryEntries_${username}`;
-    localStorage.setItem(userEntriesKey, JSON.stringify(sortedEntries));
+    await setDoc(doc(db, "diaries", username), { entries: sortedEntries });
     
     return { success: true, entries: sortedEntries };
   } catch (error) {
-    console.error('Save failed:', error);
-    return { success: false, message: 'Failed to save entry.' };
+    return { success: false, message: 'Cloud sync failed.' };
   }
 };
 
-export const deleteEntry = (entryId, entries, username) => {
+export const deleteEntry = async (entryId, entries, username) => {
   try {
     const safeEntries = Array.isArray(entries) ? entries : [];
     const updatedEntries = safeEntries.filter(e => e.id !== entryId);
     
-    const userEntriesKey = `diaryEntries_${username}`;
-    localStorage.setItem(userEntriesKey, JSON.stringify(updatedEntries));
-    
+    await setDoc(doc(db, "diaries", username), { entries: updatedEntries });
     return { success: true, entries: updatedEntries };
   } catch (error) {
-    return { success: false, message: 'Failed to delete entry.' };
+    return { success: false, message: 'Cloud deletion failed.' };
   }
 };
 
+// ... exportEntries remains exactly the same ...
 export const exportEntries = (entriesToExport, username, format = 'json') => {
   const timestamp = new Date().toISOString().split('T')[0];
   const filename = `Volume-I-${username}-${timestamp}`;
@@ -149,30 +143,27 @@ const triggerDownload = (blob, filename) => {
   URL.revokeObjectURL(url);
 };
 
-export const importEntries = (file, username, callback) => {
+export const importEntries = async (file, username, callback) => {
   const reader = new FileReader();
-  reader.onload = (event) => {
+  reader.onload = async (event) => {
     try {
       const imported = JSON.parse(event.target.result);
       if (!Array.isArray(imported)) throw new Error("Not a valid array");
       
-      const userEntriesKey = `diaryEntries_${username}`;
-      const currentStored = localStorage.getItem(userEntriesKey);
-      
-      let currentEntries = currentStored ? JSON.parse(currentStored) : [];
-      if (!Array.isArray(currentEntries)) currentEntries = [];
+      const docRef = doc(db, "diaries", username);
+      const docSnap = await getDoc(docRef);
+      const currentEntries = docSnap.exists() ? docSnap.data().entries || [] : [];
 
       const entryMap = new Map();
       currentEntries.forEach(entry => entryMap.set(entry.id, entry));
       imported.forEach(entry => entryMap.set(entry.id, entry));
       
-      const mergedEntries = Array.from(entryMap.values());
-      const sortedEntries = mergedEntries.sort((a, b) => safeGetTime(b) - safeGetTime(a));
+      const sortedEntries = Array.from(entryMap.values()).sort((a, b) => safeGetTime(b) - safeGetTime(a));
+      await setDoc(docRef, { entries: sortedEntries });
       
-      localStorage.setItem(userEntriesKey, JSON.stringify(sortedEntries));
       callback({ success: true, entries: sortedEntries });
     } catch (error) {
-      callback({ success: false, message: 'Invalid file format.' });
+      callback({ success: false, message: 'Invalid file format or cloud error.' });
     }
   };
   reader.readAsText(file);
