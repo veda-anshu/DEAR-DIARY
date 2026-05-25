@@ -41,12 +41,18 @@ export default function DiaryApp() {
   const [showExportModal, setShowExportModal] = useState(false);
   
   const [modalConfig, setModalConfig] = useState(null);
+  const [isMobile, setIsMobile] = useState(false);
+  const [showMobileList, setShowMobileList] = useState(false);
 
   const showAlert = (message, title = "Notice") => setModalConfig({ type: 'alert', title, message, onConfirm: () => setModalConfig(null) });
   const showConfirm = (message, onConfirm, title = "Confirm") => setModalConfig({ type: 'confirm', title, message, onConfirm: () => { onConfirm(); setModalConfig(null); }, onCancel: () => setModalConfig(null) });
 
   useEffect(() => {
     setIsClient(true);
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+
     setCurrentDateTime(new Date());
     const timer = setInterval(() => setCurrentDateTime(new Date()), 1000);
     const user = checkAuth();
@@ -55,7 +61,11 @@ export default function DiaryApp() {
       setIsAuthenticated(true);
       loadEntries(user).then(data => setEntries(data));
     }
-    return () => clearInterval(timer);
+    
+    return () => {
+      clearInterval(timer);
+      window.removeEventListener('resize', checkMobile);
+    };
   }, []);
 
   useEffect(() => {
@@ -107,6 +117,7 @@ export default function DiaryApp() {
     if (result.success) {
       setEntries(result.entries);
       handleNewEntry();
+      showAlert("Entry secured.", "Saved");
     } else {
       showAlert("Failed to save your entry to the cloud.", "Cloud Error");
     }
@@ -146,16 +157,29 @@ export default function DiaryApp() {
   if (!isAuthenticated) return <Auth onLogin={handleLogin} />;
 
   return (
-    <div className="min-h-screen bg-[#FDFCF8] text-[#333333] font-serif selection:bg-[#EAE4D9] transition-colors">
+    <div className="min-h-screen flex flex-col bg-[#FDFCF8] text-[#333333] font-serif selection:bg-[#EAE4D9] transition-colors">
       <Header currentUser={currentUser} onLogout={handleLogout} onExport={() => setShowExportModal(true)} onImport={(e) => importEntries(e.target.files[0], currentUser, (res) => res.success ? setEntries(res.entries) : showAlert(res.message, "Import Error"))} />
       
-      <div className="max-w-7xl mx-auto px-4 py-8 flex relative h-[calc(100vh-80px)] transition-all" style={{ gap: sidebarWidth > 0 ? '2rem' : '0rem' }}>
-        <DiaryList 
-          entries={entries} searchQuery={searchQuery} setSearchQuery={setSearchQuery} 
-          onLoadEntry={handleLoadEntry} onDeleteEntry={handleDeleteEntry} 
-          width={sidebarWidth} onResize={setSidebarWidth} showConfirm={showConfirm}
-        />
-        <main className="flex-1 min-w-0 transition-all overflow-y-auto pr-4">
+      <div className="w-full max-w-7xl mx-auto px-4 md:px-6 py-4 md:py-8 flex flex-col md:flex-row relative flex-1 transition-all" style={{ gap: sidebarWidth > 0 && !isMobile ? '2rem' : '0rem' }}>
+        
+        <div className={`${isMobile ? (showMobileList ? 'fixed inset-0 z-50 bg-[#FDFCF8] p-4 h-full overflow-hidden' : 'hidden') : 'relative h-full'}`}>
+          <DiaryList 
+            entries={entries} searchQuery={searchQuery} setSearchQuery={setSearchQuery} 
+            onLoadEntry={handleLoadEntry} onDeleteEntry={handleDeleteEntry} 
+            width={isMobile ? '100%' : sidebarWidth} onResize={setSidebarWidth} showConfirm={showConfirm}
+            isMobile={isMobile} onCloseMobile={() => setShowMobileList(false)}
+          />
+        </div>
+        
+        <main className="flex-1 min-w-0 h-full flex flex-col transition-all overflow-y-auto pr-0 md:pr-4">
+          {isMobile && (
+            <button 
+              onClick={() => setShowMobileList(true)} 
+              className="w-full mb-6 py-3 text-xs tracking-widest uppercase font-semibold border border-[#EBE6DF] rounded-md text-[#5C554B] hover:bg-[#F4F1EA] transition-colors"
+            >
+              Open Archive
+            </button>
+          )}
           <DiaryEditor
             currentEntry={currentEntry} setCurrentEntry={setCurrentEntry} dateInput={dateInput} setDateInput={setDateInput} currentDateTime={currentDateTime}
             onSave={handleSaveEntry} onNewEntry={handleNewEntry} onPastEntry={handlePastEntry}
