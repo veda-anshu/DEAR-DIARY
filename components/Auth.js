@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { PenLine } from 'lucide-react';
+import { PenLine, Loader2 } from 'lucide-react';
 import { registerUser, loginUser } from '../utils/auth';
 
 export default function Auth({ onLogin }) {
@@ -7,30 +7,50 @@ export default function Auth({ onLogin }) {
   const [credentials, setCredentials] = useState({ username: '', password: '', confirmPassword: '' });
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleAuth = async (e) => {
     if (e) e.preventDefault();
     setErrorMsg('');
     setSuccessMsg('');
+    setIsLoading(true);
 
-    if (credentials.username.length < 3) return setErrorMsg("Your Name must be at least 3 characters.");
-    if (credentials.password.length < 6) return setErrorMsg("Your Secret Key must be at least 6 characters.");
-    if (authMode === 'register' && credentials.password !== credentials.confirmPassword) return setErrorMsg("Secret Keys do not match.");
+    if (credentials.username.length < 3) {
+      setErrorMsg("Your Name must be at least 3 characters.");
+      setIsLoading(false);
+      return;
+    }
+    if (credentials.password.length < 6) {
+      setErrorMsg("Your Secret Key must be at least 6 characters.");
+      setIsLoading(false);
+      return;
+    }
+    if (authMode === 'register' && credentials.password !== credentials.confirmPassword) {
+      setErrorMsg("Secret Keys do not match.");
+      setIsLoading(false);
+      return;
+    }
 
-    const action = authMode === 'login' 
-      ? await loginUser(credentials.username, credentials.password) 
-      : await registerUser(credentials.username, credentials.password, credentials.confirmPassword);
-    
-    if (action.success) {
-      if (authMode === 'login') {
-        onLogin(action.username); 
+    try {
+      const action = authMode === 'login' 
+        ? await loginUser(credentials.username, credentials.password) 
+        : await registerUser(credentials.username, credentials.password, credentials.confirmPassword);
+      
+      if (action.success) {
+        if (authMode === 'login') {
+          onLogin(action.username); 
+        } else {
+          setSuccessMsg('Welcome. You may now open your diary.');
+          setAuthMode('login');
+          setCredentials({ username: credentials.username, password: '', confirmPassword: '' });
+        }
       } else {
-        setSuccessMsg('Welcome. You may now open your diary.');
-        setAuthMode('login');
-        setCredentials({ username: credentials.username, password: '', confirmPassword: '' });
+        setErrorMsg(action.message);
       }
-    } else {
-      setErrorMsg(action.message);
+    } catch (err) {
+      setErrorMsg("An unexpected error occurred. Check console for details.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -62,11 +82,17 @@ export default function Auth({ onLogin }) {
             <input type="password" placeholder="Confirm Secret Key" value={credentials.confirmPassword} onChange={(e) => { setCredentials({ ...credentials, confirmPassword: e.target.value }); setErrorMsg(''); }} className="w-full bg-transparent border-b border-[#EBE6DF] focus:border-[#8C8173] outline-none py-2 text-[#333333] placeholder:text-[#D1CBC3] placeholder:font-serif placeholder:italic transition-colors" />
           )}
 
-          <button type="submit" className="w-full pt-8 font-serif uppercase tracking-widest text-sm text-[#5C554B] hover:text-[#333333] transition-colors">
-            {authMode === 'login' ? 'Unlock Diary' : 'Inscribe Name'}
+          <button type="submit" disabled={isLoading} className="w-full pt-8 font-serif uppercase tracking-widest text-sm text-[#5C554B] hover:text-[#333333] transition-colors flex items-center justify-center disabled:opacity-50">
+            {isLoading ? (
+              <span className="flex items-center space-x-2 text-[#8C8173]">
+                <Loader2 size={14} className="animate-spin" /> <span>Authenticating...</span>
+              </span>
+            ) : (
+              authMode === 'login' ? 'Unlock Diary' : 'Inscribe Name'
+            )}
           </button>
 
-          {errorMsg && <div className="text-[#8C8173] text-[10px] tracking-widest uppercase text-center mt-6 p-3 bg-[#F4F1EA] rounded-md border border-[#EBE6DF]">{errorMsg}</div>}
+          {errorMsg && <div className="text-red-700 font-semibold text-[10px] tracking-widest uppercase text-center mt-6 p-3 bg-red-50 rounded-md border border-red-200 shadow-sm">{errorMsg}</div>}
           {successMsg && <div className="text-[#5C554B] font-semibold text-[10px] tracking-widest uppercase text-center mt-6 p-3 bg-[#EAE4D9] rounded-md border border-[#EBE6DF]">{successMsg}</div>}
         </form>
       </div>

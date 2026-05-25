@@ -20,6 +20,8 @@ export const registerUser = async (username, password, confirmPassword) => {
     await setDoc(userRef, { password: btoa(password), createdAt: new Date().toISOString() });
     return { success: true, message: 'Registration successful!' };
   } catch (error) {
+    console.error("Firebase Registration Error:", error);
+    if (error.code === 'permission-denied') return { success: false, message: 'Database access denied. Check Firestore rules.' };
     return { success: false, message: 'Failed to connect to the cloud.' };
   }
 };
@@ -44,6 +46,8 @@ export const loginUser = async (username, password) => {
     localStorage.setItem('diaryAuthSession', username);
     return { success: true, message: 'Login successful!', username };
   } catch (error) {
+    console.error("Firebase Login Error:", error);
+    if (error.code === 'permission-denied') return { success: false, message: 'Database access denied. Check Firestore rules.' };
     return { success: false, message: 'Failed to connect to the cloud.' };
   }
 };

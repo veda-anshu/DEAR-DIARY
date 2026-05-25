@@ -22,6 +22,7 @@ export const loadEntries = async (username) => {
     }
     return [];
   } catch (error) {
+    console.error("Firebase Load Error:", error);
     return [];
   }
 };
@@ -40,6 +41,7 @@ export const saveEntry = async (entry, entries, username) => {
     
     return { success: true, entries: sortedEntries };
   } catch (error) {
+    console.error("Firebase Save Error:", error);
     return { success: false, message: 'Cloud sync failed.' };
   }
 };
@@ -52,11 +54,11 @@ export const deleteEntry = async (entryId, entries, username) => {
     await setDoc(doc(db, "diaries", username), { entries: updatedEntries });
     return { success: true, entries: updatedEntries };
   } catch (error) {
+    console.error("Firebase Delete Error:", error);
     return { success: false, message: 'Cloud deletion failed.' };
   }
 };
 
-// ... exportEntries remains exactly the same ...
 export const exportEntries = (entriesToExport, username, format = 'json') => {
   const timestamp = new Date().toISOString().split('T')[0];
   const filename = `Volume-I-${username}-${timestamp}`;
@@ -163,6 +165,7 @@ export const importEntries = async (file, username, callback) => {
       
       callback({ success: true, entries: sortedEntries });
     } catch (error) {
+      console.error("Firebase Import Error:", error);
       callback({ success: false, message: 'Invalid file format or cloud error.' });
     }
   };
